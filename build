@@ -1,0 +1,10 @@
+#!/bin/bash
+
+tsc -p tsconfig.cli.json
+node tools/postbuild.js
+
+cp -r patches/ dist/patches/
+cp -r src/core/ dist/core/
+cp LICENSE README.md dist/
+
+rm -f dist/tsconfig.tsbuildinfo

@@ -1,0 +1,41 @@
+{
+  "ignorePatterns": ["dist/", "node_modules/"],
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "plugins": ["@evojs"],
+  "extends": ["plugin:@evojs/ecmascript", "plugin:@evojs/react"],
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {},
+  "overrides": [
+    {
+      "files": ["**/*.{ts,tsx}"],
+      "plugins": ["@evojs"],
+      "extends": ["plugin:@evojs/typescript"],
+      "parserOptions": {
+        "project": "tsconfig.json",
+        "sourceType": "module"
+      },
+      "rules": {
+        "react-hooks/exhaustive-deps": [
+          "warn",
+          {
+            "additionalHooks": "(usePromise)"
+          }
+        ]
+      }
+    }
+  ],
+  "settings": {
+    "react": {
+      "version": "18"
+    }
+  }
+}
