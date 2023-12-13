@@ -38,4 +38,11 @@ program
         }
       });
     });
-  });
+  })
+  .on('error', (err) => {
+    console.error(err);
+    process.exit(1);
+  })
+  .version('0.1.1');
+
+program.parse(process.argv);
