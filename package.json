@@ -1,6 +1,6 @@
 {
   "name": "@evojs/ussr",
-  "version": "0.1.1",
+  "version": "0.1.4",
   "description": "USSR: server-side renderer",
   "license": "MIT",
   "main": "core/index.ts",
@@ -14,7 +14,7 @@
     "release": "npm publish --access public dist/",
     "test": "jest --coverage --detectOpenHandles",
     "lint": "tsc --noemit && eslint '**/*.{ts,tsx}' --fix --max-warnings=0",
-    "install": "patch-package"
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@abraham/reflection": "^0.12.0",
@@ -53,9 +53,9 @@
     "@evojs/eslint-plugin": "^6.0.1",
     "@types/lodash": "^4.14.202",
     "@types/node": "^18.19.3",
-    "@typescript-eslint/eslint-plugin": "~6.14.0",
-    "@typescript-eslint/parser": "~6.14.0",
-    "eslint": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "~6.15.0",
+    "@typescript-eslint/parser": "~6.15.0",
+    "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0"
   },

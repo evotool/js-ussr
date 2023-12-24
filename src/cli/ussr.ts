@@ -11,7 +11,7 @@ program
   .option('--port <number>', 'Port', '3000')
   .option('--mode <string>', 'Env mode', process.env.NODE_ENV || 'development')
   .option('--cwd <string>', 'A directory to use instead of $PWD.', process.cwd())
-  .action((_, options) => {
+  .action((options) => {
     const { watch, mode = 'development', cwd } = options;
     const compiler = webpack(makeConfig(mode, cwd));
 
