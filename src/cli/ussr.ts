@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import webpack from 'webpack';
 
-import { makeConfig } from './make-config';
+import { runWebpack } from './run-webpack.function';
 
 program
   .option('--watch', 'Watch mode', false)
@@ -13,31 +12,8 @@ program
   .option('--cwd <string>', 'A directory to use instead of $PWD.', process.cwd())
   .action((options) => {
     const { watch, mode = 'development', cwd } = options;
-    const compiler = webpack(makeConfig(mode, cwd));
 
-    if (watch) {
-      compiler.watch({}, (err, stats) => {
-        if (err || stats?.hasErrors()) {
-          console.error(err, stats);
-        }
-      });
-
-      return;
-    }
-
-    compiler.run((err, stats) => {
-      if (err || stats?.hasErrors()) {
-        console.error(err, stats);
-
-        return;
-      }
-
-      compiler.close((closeErr) => {
-        if (closeErr) {
-          console.error(closeErr);
-        }
-      });
-    });
+    runWebpack(watch, mode, cwd);
   })
   .on('error', (err) => {
     console.error(err);
