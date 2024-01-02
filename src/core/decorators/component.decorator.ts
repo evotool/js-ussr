@@ -7,9 +7,7 @@ import { makeComponent } from '../functions/make-component.function';
 import { Reflector } from '../functions/reflector.namespace';
 import { type ComponentOptions } from '../types';
 
-export function Component(
-  options: ComponentOptions = {},
-): ClassDecorator {
+export function Component(options: ComponentOptions = {}): ClassDecorator {
   return applyDecorators(Reflector.set(COMPONENT_MKEY, options), injectable(), (target) => {
     Object.defineProperty(target, 'Component', {
       get() {

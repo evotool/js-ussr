@@ -18,6 +18,7 @@ import { svgSass } from './svg-sass.function';
 export const makeConfig = (mode: string, pwd: string): Configuration[] => {
   const isProd = mode === 'production';
   const cwd = (path?: string): string => path ? join(pwd, path) : pwd;
+  const tsconfigPath = cwd('tsconfig.json');
 
   dotenv.config({
     path: cwd('.env'),
@@ -58,7 +59,11 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
-      plugins: [new TsconfigPathsPlugin()],
+      plugins: [
+        new TsconfigPathsPlugin({
+          configFile: tsconfigPath,
+        }),
+      ],
       alias: {
         'react': 'preact/compat',
         'react-dom': 'preact/compat',
@@ -73,6 +78,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
         {
           loader: 'ts-loader',
           options: {
+            configFile: tsconfigPath,
             transpileOnly: true,
           },
         },
@@ -129,7 +135,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
       devtool: false,
       output: {
         filename: 'main.js',
-        path: cwd('dist'),
+        path: cwd('dist/'),
         clean: false,
         devtoolModuleFilenameTemplate: '[resource-path]',
         devtoolFallbackModuleFilenameTemplate: '[resource-path]',
@@ -138,7 +144,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
         ...commonPlugins,
         new NodemonPlugin({
           script: cwd('dist/main.js'),
-          watch: [cwd('dist')],
+          watch: [cwd('dist/')],
         }),
       ],
       module: {
@@ -177,7 +183,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
       devtool: false,
       output: {
         filename: 'app.js',
-        path: cwd('dist/public'),
+        path: cwd('dist/public/'),
         clean: false,
         devtoolModuleFilenameTemplate: '[resource-path]',
         devtoolFallbackModuleFilenameTemplate: '[resource-path]',
@@ -213,8 +219,8 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
         new CopyPlugin({
           patterns: [
             {
-              from: cwd('public'),
-              to: cwd('dist/public'),
+              from: cwd('public/'),
+              to: cwd('dist/public/'),
             },
           ],
           options: {

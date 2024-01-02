@@ -11,7 +11,7 @@ import {
   type ComponentInstance,
   type ComponentType,
   type EvoNode,
-} from '../types';
+} from './types';
 
 type Child = ComponentChild | ComponentChild[];
 
@@ -57,12 +57,12 @@ function createEvoNode<P>(
     __self?: boolean,
     __source?: { fileName: string; lineNumber: number; columnNumber: number },
   ) => EvoNode<P>;
-  // @ts-ignore
-  type = type.Component || type;
+  type = (type as unknown as ComponentClass<any>).Component || type;
 
   return (preactJsx as unknown as JsxFn)(type, props, key, __self, __source);
 }
 
-export { createEvoNode as jsx, createEvoNode as jsxs, createEvoNode as jsxDEV };
-
+export const jsx = createEvoNode;
+export const jsxs = createEvoNode;
+export const jsxDEV = createEvoNode;
 export const Fragment = _Fragment;

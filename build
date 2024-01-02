@@ -5,10 +5,9 @@ tsc -p tsconfig.core.json
 node tools/postbuild.js
 
 cp -r patches/ dist/patches/
-# cp -r src/core/ dist/core/
 cp LICENSE README.md dist/
 
 rm -f dist/cli/tsconfig.cli.tsbuildinfo
-rm -f dist/cli/tsconfig.core.tsbuildinfo
+rm -f dist/tsconfig.core.tsbuildinfo
 
 chmod +x dist/cli/ussr.js

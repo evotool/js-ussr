@@ -1,39 +1,74 @@
-import { webpack } from 'webpack';
+import { type MultiStats, webpack } from 'webpack';
 
+import { log } from './log.function';
 import { makeConfig } from './make-config.function';
+import { onExit } from './on-exit.function';
+
+type SomeError = Error & {
+  [key: string]: any;
+};
 
 export function runWebpack(watch: boolean, mode: string, cwd: string): void {
   const compiler = webpack(makeConfig(mode, cwd));
 
   if (watch) {
-    compiler.watch({}, (err, stats) => {
-      if (err || stats?.hasErrors()) {
-        console.error(err, stats);
+    log('Start watching');
+
+    const watching = compiler.watch(
+      {},
+      (err: SomeError | null | undefined, stats: MultiStats | undefined) => {
+        if (err) {
+          log(err);
+
+          return;
+        }
+
+        log(stats!.toString());
+      },
+    );
+
+    onExit(async (signal) => {
+      log('Stop watching', signal);
+
+      try {
+        await new Promise<void>((r, t) => watching.close((e) => e ? t(e) : r()));
+        log('Watching successfully closed');
+      } catch (err) {
+        log('Watching error:', err);
       }
 
-      console.log(stats?.toString());
+      process.exit();
     });
 
     return;
   }
 
-  compiler.run((err, stats) => {
-    if (err || stats?.hasErrors()) {
-      console.error(err, stats);
+  log('Start building');
+
+  compiler.run((err: SomeError | null | undefined, stats: MultiStats | undefined) => {
+    if (err) {
+      log(err.stack || err);
+
+      if (err.details) {
+        log(err.details);
+      }
 
       return;
     }
 
-    console.log(stats?.toString());
+    log(stats!.toString());
+  });
 
-    compiler.close((closeErr, result) => {
-      if (closeErr) {
-        console.error(closeErr);
+  onExit(async (signals) => {
+    log('Stop compiler', signals);
 
-        return;
-      }
+    try {
+      await new Promise<void>((r, t) => compiler.close((e) => e ? t(e) : r()));
+      log('Compiler successfully closed');
+    } catch (err) {
+      log('Compiler error:', err);
+    }
 
-      console.log({ result });
-    });
+    process.exit();
   });
 }

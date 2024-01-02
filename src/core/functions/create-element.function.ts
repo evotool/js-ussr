@@ -1,4 +1,4 @@
-import { type Attributes, type ComponentChild, h as preactH } from 'preact';
+import { type Attributes, type ComponentChild, Fragment as _Fragment, h as preactH } from 'preact';
 
 import { type ComponentClass, type ComponentType, type EvoNode } from '../types';
 
@@ -26,3 +26,6 @@ export function createElement<P>(
 
   return preactH(type as any, props, ...children) as EvoNode<P>;
 }
+
+export const h = createElement;
+export const Fragment = _Fragment;

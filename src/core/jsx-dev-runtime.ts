@@ -6,12 +6,13 @@ import {
 } from 'preact';
 import { jsx as preactJsx } from 'preact/jsx-runtime';
 
+import { createElement } from './functions/create-element.function';
 import {
   type ComponentClass,
   type ComponentInstance,
   type ComponentType,
   type EvoNode,
-} from '../types';
+} from './types';
 
 type Child = ComponentChild | ComponentChild[];
 type JsxStringProps = JSX.HTMLAttributes &
@@ -56,11 +57,13 @@ function createEvoNode<P>(
     __self?: boolean,
     __source?: { fileName: string; lineNumber: number; columnNumber: number },
   ) => EvoNode<P>;
-  // @ts-ignore
-  type = type.Component || type;
+  type = (type as unknown as ComponentClass<any>).Component || type;
 
   return (preactJsx as unknown as JsxFn)(type, props, key, __self, __source);
 }
 
-export { createEvoNode as jsx, createEvoNode as jsxs, createEvoNode as jsxDEV };
+export const h = createElement;
+export const jsx = createEvoNode;
+export const jsxs = createEvoNode;
+export const jsxDEV = createEvoNode;
 export const Fragment = _Fragment;

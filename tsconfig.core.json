@@ -4,7 +4,7 @@
 		"declaration": true,
     "baseUrl": "src/core/",
     "jsx": "react-jsx",
-    "jsxImportSource": "../jsx",
+    "jsxImportSource": "../",
     "lib": ["dom", "esnext"],
     "outDir": "dist/",
   },
