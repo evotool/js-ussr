@@ -12,7 +12,7 @@ export function runWebpack(watch: boolean, mode: string, cwd: string): void {
   const compiler = webpack(makeConfig(mode, cwd));
 
   if (watch) {
-    log('Start watching');
+    log(`Start watching in ${mode} mode`);
 
     const watching = compiler.watch(
       {},
@@ -43,7 +43,7 @@ export function runWebpack(watch: boolean, mode: string, cwd: string): void {
     return;
   }
 
-  log('Start building');
+  log(`Start building in ${mode} mode`);
 
   compiler.run((err: SomeError | null | undefined, stats: MultiStats | undefined) => {
     if (err) {

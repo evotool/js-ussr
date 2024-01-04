@@ -1,6 +1,6 @@
 import { load } from 'cheerio';
 import { type ComponentType } from 'preact';
-import { render } from 'preact-render-to-string';
+import { renderToString } from 'preact-render-to-string';
 
 import { type ServerOptions, createContainer } from './create-container.function';
 import { HeadManager } from '../classes/head-manager.class';
@@ -19,7 +19,8 @@ const HTML_TEMPLATE = `<!DOCTYPE html>
   </head>
   <body>
     <div id="root"></div>
-    <script src="/app.js" defer></script>
+    <script defer src="/vendor.js"></script>
+    <script defer src="/app.js"></script>
   </body>
 </html>
 `
@@ -40,13 +41,13 @@ export async function renderForServer(
   try {
     await router.resolveDataForServer();
 
-    renderedHtml = render(
+    renderedHtml = renderToString(
       <ContainerContext.Provider value={container}>
         <RouterOutlet errorPage={ErrorPageComponent} />
       </ContainerContext.Provider>,
     );
   } catch (error: any) {
-    renderedHtml = render(
+    renderedHtml = renderToString(
       <ContainerContext.Provider value={container}>
         <ErrorPageComponent error={error} />
       </ContainerContext.Provider>,

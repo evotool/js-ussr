@@ -4,13 +4,12 @@ import { useEffect } from 'preact/hooks';
 
 import { ErrorPage } from './error-page.component';
 import { HttpException } from '../classes/http-exception.class';
-import { Router } from '../classes/router.class';
-import { useInjection } from '../functions/use-injection.function';
+import { useRouter } from '../hooks/use-router.hook';
 import { type Route } from '../types';
 
 export const RouterOutlet: FunctionComponent<RouterOutletProps> = observer(
   ({ parent, errorPage }) => {
-    const router$ = useInjection(Router);
+    const router$ = useRouter();
     const { url, routeChain, data, notFound } = router$.snapshot;
 
     useEffect(() => {

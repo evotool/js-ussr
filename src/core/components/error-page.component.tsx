@@ -2,7 +2,7 @@ import { type FunctionComponent } from 'preact';
 
 import { type HttpException } from '../classes/http-exception.class';
 import { RESPONSE } from '../constants';
-import { useInjection } from '../functions/use-injection.function';
+import { useInjection } from '../hooks/use-injection.hook';
 
 const MESSAGES = {
   400: 'Bad Request',

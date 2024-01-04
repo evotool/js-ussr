@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "baseUrl": "src/cli/",
+    "module": "commonjs",
     "outDir": "dist/cli/"
   },
   "include": ["src/cli/**/*.ts"],

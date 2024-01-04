@@ -3,9 +3,8 @@ import { type FunctionComponent } from 'preact';
 import { useCallback } from 'preact/hooks';
 import { type JSXInternal } from 'preact/src/jsx';
 
-import { Router } from '../classes/router.class';
 import { UrlUtils } from '../functions/url-utils.namespace';
-import { useInjection } from '../functions/use-injection.function';
+import { useRouter } from '../hooks/use-router.hook';
 import { type QueryParams } from '../types';
 
 export const Link: FunctionComponent<LinkProps> = observer(
@@ -14,9 +13,9 @@ export const Link: FunctionComponent<LinkProps> = observer(
       href += `?${UrlUtils.buildQuery(queryParams)}`;
     }
 
-    const router$ = useInjection(Router);
+    const router = useRouter();
 
-    if (router$.snapshot.url === href && activeClassName) {
+    if (router.snapshot.url === href && activeClassName) {
       props.className = activeClassName;
     }
 
@@ -32,7 +31,7 @@ export const Link: FunctionComponent<LinkProps> = observer(
 
         (async () => {
           await onClick?.(event);
-          await router$.navigate(href);
+          await router.navigate(href);
         })().catch(console.error);
 
         event.stopImmediatePropagation?.();
@@ -41,7 +40,7 @@ export const Link: FunctionComponent<LinkProps> = observer(
 
         return false;
       },
-      [href, target, onClick, router$],
+      [href, target, onClick, router],
     );
 
     return (

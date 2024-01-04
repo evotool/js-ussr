@@ -1,3 +1,4 @@
+import { enableStaticRendering } from 'mobx-react';
 import { type FunctionComponent } from 'preact';
 import { type JSXInternal } from 'preact/src/jsx';
 
@@ -35,9 +36,13 @@ export * from './functions/make-component.function';
 export * from './functions/reflector.namespace';
 export * from './functions/resolve-route-chain.function';
 export * from './functions/url-utils.namespace';
-export * from './functions/use-injection.function';
+
+export * from './hooks/use-injection.hook';
+export * from './hooks/use-router.hook';
 
 export * from './types';
+
+enableStaticRendering(!global.window);
 
 interface ClassComponent {
   onInit?(): void;

@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "../",
     "lib": ["dom", "esnext"],
+    "module": "esnext",
     "outDir": "dist/",
   },
   "include": ["src/core/**/*.ts"],

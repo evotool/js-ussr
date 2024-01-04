@@ -1,7 +1,7 @@
 import { type FunctionComponent } from 'preact';
 
 import { HeadManager } from '../classes/head-manager.class';
-import { useInjection } from '../functions/use-injection.function';
+import { useInjection } from '../hooks/use-injection.hook';
 
 export const Head: FunctionComponent = ({ children }) => {
   const headManager = useInjection(HeadManager);

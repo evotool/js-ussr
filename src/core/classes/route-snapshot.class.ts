@@ -32,7 +32,7 @@ export class RouteSnapshot {
     return this.data;
   }
 
-  static fromUrl(url: string, routes: Route[]): RouteSnapshot {
+  static fromUri(url: string, routes: Route[]): RouteSnapshot {
     const routeChain: Route[] = [];
 
     const [urlPathWithQuery, fragment = ''] = url.split('#', 2);

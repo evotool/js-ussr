@@ -1,4 +1,5 @@
 /* eslint-disable import/default, import/no-import-module-exports */
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import dotenv from 'dotenv';
 import { existsSync } from 'fs';
@@ -42,21 +43,6 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
       maxEntrypointSize: 512000,
       maxAssetSize: 512000,
     },
-    optimization: {
-      splitChunks: {
-        chunks: 'async',
-      },
-      // runtimeChunk: 'single',
-      // splitChunks: {
-      //   cacheGroups: {
-      //     vendor: {
-      //       test: /node_modules/,
-      //       name: 'vendor',
-      //       chunks: 'all',
-      //     },
-      //   },
-      // },
-    },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
       plugins: [
@@ -83,7 +69,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
           },
         },
       ],
-      exclude: /node_modules/,
+      // exclude: /node_modules/,
     },
   ];
 
@@ -98,12 +84,12 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
         }, {}),
     ),
     new MiniCssExtractPlugin({
-      filename: 'app.css',
+      filename: '[name].css',
     }),
     isProd
       ? null
       : new SourceMapDevToolPlugin({
-        filename: '[file].map',
+        filename: '[name][ext].map',
         exclude: ['vendor.js'],
         sourceRoot: '../',
         moduleFilenameTemplate: '[resource-path]',
@@ -139,6 +125,11 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
         clean: false,
         devtoolModuleFilenameTemplate: '[resource-path]',
         devtoolFallbackModuleFilenameTemplate: '[resource-path]',
+      },
+      optimization: {
+        splitChunks: {
+          chunks: 'async',
+        },
       },
       plugins: [
         ...commonPlugins,
@@ -182,12 +173,41 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
       },
       devtool: false,
       output: {
-        filename: 'app.js',
+        filename: '[name].js',
         path: cwd('dist/public/'),
         clean: false,
         devtoolModuleFilenameTemplate: '[resource-path]',
         devtoolFallbackModuleFilenameTemplate: '[resource-path]',
       },
+      optimization: {
+        splitChunks: {
+          cacheGroups: {
+            vendor: {
+              test: /node_modules/,
+              name: 'vendor',
+              chunks: 'all',
+            },
+          },
+        },
+      },
+      plugins: [
+        ...commonPlugins,
+        new CopyPlugin({
+          patterns: [
+            {
+              from: cwd('public/'),
+              to: cwd('dist/public/'),
+            },
+          ],
+          options: {
+            concurrency: 100,
+          },
+        }),
+        new CleanWebpackPlugin({
+          protectWebpackAssets: false,
+          cleanAfterEveryBuildPatterns: [cwd('dist/**/*.LICENSE.txt')],
+        }),
+      ],
       module: {
         rules: [
           ...commonRules,
@@ -214,20 +234,6 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
           },
         ],
       },
-      plugins: [
-        ...commonPlugins,
-        new CopyPlugin({
-          patterns: [
-            {
-              from: cwd('public/'),
-              to: cwd('dist/public/'),
-            },
-          ],
-          options: {
-            concurrency: 100,
-          },
-        }),
-      ],
     },
   ];
 };

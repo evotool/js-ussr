@@ -1,7 +1,7 @@
 import { EventEmitter } from 'eventemitter3';
 import { type BrowserHistory, createBrowserHistory } from 'history';
 import { Container } from 'inversify';
-import { action, observable } from 'mobx';
+import { makeObservable, observable } from 'mobx';
 
 import { RouteData } from './route-data.class';
 import { RouteSnapshot } from './route-snapshot.class';
@@ -18,18 +18,13 @@ type ServerResponse = import('http').ServerResponse;
 
 @Injectable({ scope: InjectableScope.DEFAULT })
 export class Router {
-  @observable
-  private _snapshot: RouteSnapshot;
+  readonly snapshot!: RouteSnapshot;
 
   private readonly _isBrowser: boolean;
   private readonly _history: BrowserHistory | undefined;
   private readonly _stateStorage = new RouterStateStorage();
 
   readonly events = new EventEmitter();
-
-  get snapshot(): RouteSnapshot {
-    return this._snapshot;
-  }
 
   constructor(
     private readonly _container: Container,
@@ -39,9 +34,11 @@ export class Router {
   ) {
     this._isBrowser = !!global.window;
 
-    const url = this._isBrowser ? this._getLocationUrl(location) : this._req!.url!;
+    const uri = this._isBrowser ? this._getLocationUri(location) : this._req!.url!;
 
-    this._snapshot = RouteSnapshot.fromUrl(url, this._routes);
+    this._setSnapshot(RouteSnapshot.fromUri(uri, this._routes));
+
+    makeObservable(this, { snapshot: observable });
 
     if (!this._isBrowser) {
       return;
@@ -53,17 +50,17 @@ export class Router {
 
     this._history = createBrowserHistory();
     this._history.listen(({ location, action }) => {
-      const url = this._getLocationUrl(location);
+      const uri = this._getLocationUri(location);
 
-      const snapshot = this._stateStorage.get(url);
+      const snapshot = this._stateStorage.get(uri);
 
       if (!snapshot) {
-        window.location.assign(url);
+        window.location.assign(uri);
 
         return;
       }
 
-      this._snapshot = snapshot;
+      this._setSnapshot(snapshot);
       this._dispatchEvent(RouterEventTypes.NAVIGATION_END, snapshot);
     });
 
@@ -81,7 +78,7 @@ export class Router {
       return;
     }
 
-    const snapshot = RouteSnapshot.fromUrl(url, this._routes);
+    const snapshot = RouteSnapshot.fromUri(url, this._routes);
 
     this._dispatchEvent(RouterEventTypes.NAVIGATION_START, snapshot);
     this._dispatchEvent(RouterEventTypes.RESOLVE_START, snapshot);
@@ -94,15 +91,20 @@ export class Router {
     this._history!.push(url);
   }
 
-  @action
   async resolveDataForServer(): Promise<void> {
-    await this._snapshot.resolveData(this._container);
+    await this.snapshot.resolveData(this._container);
   }
 
-  @action
   private _setDataForBrowser(data: RouteData[]): void {
-    this._snapshot.data.length = 0;
-    this._snapshot.data.push(...data.map((d) => new RouteData(d)));
+    this.snapshot.data.length = 0;
+    this.snapshot.data.push(...data.map((d) => new RouteData(d)));
+    // @ts-ignore
+    // this.snapshot.data = this.snapshot.data;
+  }
+
+  private _setSnapshot(snapshot: RouteSnapshot): void {
+    // @ts-ignore
+    this.snapshot = snapshot;
   }
 
   private _dispatchEvent(type: RouterEventTypes, snapshot: RouteSnapshot): void {
@@ -111,16 +113,9 @@ export class Router {
     );
   }
 
-  private _getLocationUrl(location: { pathname: string; search: string; hash: string }): string {
+  private _getLocationUri(location: { pathname: string; search: string; hash: string }): string {
     const { pathname, search, hash } = location;
 
     return pathname + search + hash;
   }
 }
-
-// export interface RouteData {
-//   url: string;
-//   path: string;
-//   query: string;
-//   routeChain: Route[];
-// }
