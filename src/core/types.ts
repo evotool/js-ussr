@@ -53,16 +53,20 @@ export interface ComponentInstance {
   render(): JSX.Element;
 }
 
+export interface OnInit {
+  onInit(): void;
+}
+
+export interface AfterViewInit {
+  afterViewInit(): void;
+}
+
 export interface OnChanges {
   onChanges(values: ValueChanges<this>): void;
 }
 
 export interface OnDestroy {
   onDestroy(): void;
-}
-
-export interface OnInit {
-  onInit(): void;
 }
 
 export type ComponentClass<P extends ComponentInstance = ComponentInstance> = Type<
