@@ -44,16 +44,16 @@ export * from './types';
 
 enableStaticRendering(!global.window);
 
-interface ClassComponent {
-  onInit?(): void;
-  afterViewInit?(): void;
-  onChanges?(values: ValueChanges<this>): void;
-  onDestroy?(): void;
-  render(): Element;
-}
-
 declare global {
   namespace JSX {
+    interface ClassComponent {
+      onInit?(): void;
+      afterViewInit?(): void;
+      onChanges?(values: ValueChanges<this>): void;
+      onDestroy?(): void;
+      render(): Element;
+    }
+
     interface ElementAttributesProperty {}
 
     type LibraryManagedAttributes<Constructor, Instance extends { [key: string]: any }> = Constructor extends FunctionComponent<Instance>
