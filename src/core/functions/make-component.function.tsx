@@ -8,6 +8,8 @@ import {
 } from 'preact';
 import { useContext } from 'preact/hooks';
 
+import { getInheritanceChain } from './get-inheritance-chain.function';
+import { Reflector } from './reflector.namespace';
 import { COMPONENT_MKEY, COMPONENT_PROP_MKEY, COMPONENT_STATE_MKEY } from '../constants';
 import { ComponentContext, type ComponentContextValue } from '../contexts/component.context';
 import { ContainerContext } from '../contexts/container.context';
@@ -25,14 +27,21 @@ export function makeComponent<
   P extends RenderableProps<{ [key: string]: any }> = InstanceType<C>,
   S = any,
 >(constructor: C): ComponentType<P> {
-  const options = Reflect.getMetadata<ComponentOptions>(COMPONENT_MKEY, constructor);
+  const options = Reflector.find<ComponentOptions>(COMPONENT_MKEY, constructor);
 
   if (!options) {
     throw new Error('Component not found');
   }
 
-  const propKeys = Reflect.getMetadata<string[]>(COMPONENT_PROP_MKEY, constructor) || [];
-  const stateKeys = Reflect.getMetadata<string[]>(COMPONENT_STATE_MKEY, constructor) || [];
+  const constructors = getInheritanceChain(constructor);
+
+  const propKeys = constructors.flatMap(
+    (c) => Reflector.find<string[]>(COMPONENT_PROP_MKEY, c) || [],
+  );
+  const stateKeys = constructors.flatMap(
+    (c) => Reflector.find<string[]>(COMPONENT_STATE_MKEY, c) || [],
+  );
+
   const { withFns = [] } = options;
 
   const Component = class extends PreactComponent<P, S> {

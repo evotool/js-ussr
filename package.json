@@ -1,6 +1,6 @@
 {
   "name": "@evojs/ussr",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "USSR: server-side renderer",
   "license": "MIT",
   "main": "core/index.ts",
@@ -54,8 +54,8 @@
     "@evojs/eslint-plugin": "^6.0.1",
     "@types/lodash": "^4.14.202",
     "@types/node": "^18.19.4",
-    "@typescript-eslint/eslint-plugin": "~6.17.0",
-    "@typescript-eslint/parser": "~6.17.0",
+    "@typescript-eslint/eslint-plugin": "~6.18.0",
+    "@typescript-eslint/parser": "~6.18.0",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0"

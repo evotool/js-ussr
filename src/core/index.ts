@@ -32,6 +32,7 @@ export * from './functions/apply-decorators.function';
 export * from './functions/bind-providers.function';
 export * from './functions/create-container.function';
 export * from './functions/create-element.function';
+export * from './functions/get-inheritance-chain.function';
 export * from './functions/make-component.function';
 export * from './functions/reflector.namespace';
 export * from './functions/resolve-route-chain.function';
