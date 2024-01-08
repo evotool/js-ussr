@@ -110,12 +110,15 @@ export function makeComponent<
       }
 
       this.shouldComponentUpdate = this._shouldComponentUpdate;
+
+      if (!global.window && this._component.onDestroy) {
+        const collection = container.get<(() => void | Promise<void>)[]>('destroy_collection');
+        collection.push(() => this._component.onDestroy!());
+      }
     }
 
     componentWillMount(): void {
-      if (global.window) {
-        this._component.onInit?.();
-      }
+      this._component.onInit?.();
     }
 
     componentDidMount(): void {

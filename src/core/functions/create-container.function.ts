@@ -26,6 +26,10 @@ export function createContainer(
     { provide: RESPONSE, useValue: serverOptions?.res },
   );
 
+  if (!global.window) {
+    globalProviders.push({ provide: 'destroy_collection', useFactory: () => [], inject: [] });
+  }
+
   const allProviders: Provider[] = providers
     .concat(globalProviders)
     .map((x) =>

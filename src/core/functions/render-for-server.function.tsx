@@ -38,6 +38,8 @@ export async function renderForServer(
   const { errorPage: ErrorPageComponent = ErrorPage } = options;
   let renderedHtml = '';
 
+  const destroyCollection = container.get<(() => void | Promise<void>)[]>('destroy_collection');
+
   try {
     await router.resolveDataForServer();
 
@@ -53,6 +55,8 @@ export async function renderForServer(
       </ContainerContext.Provider>,
     );
   }
+
+  await Promise.all(destroyCollection.map((fn) => fn()));
 
   const $ = load(HTML_TEMPLATE);
   const headManager = container.get(HeadManager);
