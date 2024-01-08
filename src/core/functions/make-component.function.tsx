@@ -50,7 +50,7 @@ export function makeComponent<
 
     private readonly _component: InstanceType<C> & ComponentInstance;
     private _state: S;
-    private readonly _mobxShouldComponentUpdate: (
+    private readonly _parentShouldComponentUpdate?: (
       nextProps: P,
       nextState: S,
       nextContext: any,
@@ -104,8 +104,11 @@ export function makeComponent<
         ),
       );
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      this._mobxShouldComponentUpdate = this.shouldComponentUpdate!;
+      if (this.shouldComponentUpdate) {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        this._parentShouldComponentUpdate = this.shouldComponentUpdate!;
+      }
+
       this.shouldComponentUpdate = this._shouldComponentUpdate;
     }
 
@@ -120,7 +123,7 @@ export function makeComponent<
     }
 
     _shouldComponentUpdate = (nextProps: P, nextState: S, nextContext: any): boolean => {
-      let value = this._mobxShouldComponentUpdate(nextProps, nextState, nextContext);
+      let value = this._parentShouldComponentUpdate?.(nextProps, nextState, nextContext) || false;
 
       if (!this._component.onChanges) {
         return value;
