@@ -114,3 +114,5 @@ export interface RouterEventPayload {
 }
 
 export type EvoNode<P = {}> = VNode<P>;
+
+export type ComponentProps<T> = Omit<T, keyof JSX.ClassComponent>;
