@@ -6,7 +6,9 @@ export namespace Reflector {
   export function find<T>(key: string, target: Target): T | undefined;
   export function find<T>(key: string, target: Target, propertyKey: PropertyKey): T | undefined;
   export function find<T>(key: string, target: Target, propertyKey?: PropertyKey): T | undefined {
-    return Reflect.getOwnMetadata<T>(key, target, propertyKey);
+    return Reflect.hasOwnMetadata(key, target, propertyKey)
+      ? Reflect.getOwnMetadata<T>(key, target, propertyKey)
+      : Reflect.getMetadata(key, target, propertyKey);
   }
 
   export function get<T>(key: string, target: Target): T;
