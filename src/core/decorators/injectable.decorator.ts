@@ -14,7 +14,7 @@ export function Injectable(options: InjectableOptions = {}): ClassDecorator {
         provide: target,
         useClass: target,
         scope,
-      }),
+      })(target),
     injectable(),
   );
 }
