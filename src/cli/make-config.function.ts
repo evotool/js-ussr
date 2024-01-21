@@ -16,6 +16,11 @@ import {
 
 import { svgSass } from './svg-sass.function';
 
+export const WEBPACK_STATS = {
+  colors: true,
+  preset: 'errors-warnings',
+};
+
 export const makeConfig = (mode: string, pwd: string): Configuration[] => {
   const isProd = mode === 'production';
   const cwd = (path?: string): string => path ? join(pwd, path) : pwd;

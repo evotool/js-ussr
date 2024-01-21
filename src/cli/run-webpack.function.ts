@@ -1,7 +1,7 @@
 import { type MultiStats, webpack } from 'webpack';
 
 import { log } from './log.function';
-import { makeConfig } from './make-config.function';
+import { WEBPACK_STATS, makeConfig } from './make-config.function';
 import { onExit } from './on-exit.function';
 
 type SomeError = Error & {
@@ -23,7 +23,7 @@ export function runWebpack(watch: boolean, mode: string, cwd: string): void {
           return;
         }
 
-        log(stats!.toString());
+        log(stats!.toString(WEBPACK_STATS));
       },
     );
 
@@ -56,7 +56,7 @@ export function runWebpack(watch: boolean, mode: string, cwd: string): void {
       return;
     }
 
-    log(stats!.toString());
+    log(stats!.toString(WEBPACK_STATS));
   });
 
   onExit(async (signals) => {
