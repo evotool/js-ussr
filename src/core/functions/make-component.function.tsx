@@ -38,11 +38,9 @@ export function makeComponent<
   const propKeys = constructors.flatMap(
     (c) => Reflector.find<string[]>(COMPONENT_PROP_MKEY, c) || [],
   );
-  const constructorStateKeys = constructors.map(
+  const stateKeys = constructors.flatMap(
     (c) => Reflector.find<string[]>(COMPONENT_STATE_MKEY, c) || [],
   );
-  const stateKeys = constructorStateKeys.flat();
-  const parentStateKeys = constructorStateKeys.slice(1).flat();
 
   const { withFns = [] } = options;
 
@@ -108,7 +106,7 @@ export function makeComponent<
 
       this._component = container.resolve<InstanceType<C> & ComponentInstance>(constructor as any);
 
-      for (const stateKey of parentStateKeys) {
+      for (const stateKey of stateKeys) {
         const stateValue = this._component[stateKey];
 
         this.state[stateKey] = stateValue;
