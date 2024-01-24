@@ -38,9 +38,11 @@ export function makeComponent<
   const propKeys = constructors.flatMap(
     (c) => Reflector.find<string[]>(COMPONENT_PROP_MKEY, c) || [],
   );
-  const stateKeys = constructors.flatMap(
+  const constructorStateKeys = constructors.map(
     (c) => Reflector.find<string[]>(COMPONENT_STATE_MKEY, c) || [],
   );
+  const stateKeys = constructorStateKeys.flat();
+  const parentStateKeys = constructorStateKeys.slice(1).flat();
 
   const { withFns = [] } = options;
 
@@ -67,42 +69,53 @@ export function makeComponent<
         throw new Error('Container not found');
       }
 
-      this._component = container.resolve<InstanceType<C> & ComponentInstance>(constructor as any);
+      this.state = {} as S;
+      this._state = {} as S;
 
-      this.state = Object.fromEntries(
-        stateKeys.map((stateKey) => [stateKey, this._component[stateKey]]),
-      ) as S;
-
-      this._state = { ...this.state };
-
-      Object.defineProperties(
-        this._component,
-        Object.fromEntries(
+      const propertyDescriptorMap: PropertyDescriptorMap = {
+        ...Object.fromEntries(
           propKeys.map((propKey) => [
             propKey,
             {
               get: () => this.props[propKey] as unknown,
+              configurable: true,
             },
           ]),
         ),
-      );
-
-      Object.defineProperties(
-        this._component,
-        Object.fromEntries(
+        ...Object.fromEntries(
           stateKeys.map((stateKey) => [
             stateKey,
             {
               get: () => this._state[stateKey] as unknown,
-              set: (v) => {
-                this._state[stateKey] = v;
+              set: (newValue) => {
+                this._state[stateKey] = newValue;
 
-                this.setState({ ...this._state });
+                if (this._component) {
+                  this.setState({ ...this._state });
+
+                  return;
+                }
+
+                this.state[stateKey] = newValue;
               },
+              configurable: true,
             },
           ]),
         ),
-      );
+      };
+
+      Object.defineProperties(constructor.prototype, propertyDescriptorMap);
+
+      this._component = container.resolve<InstanceType<C> & ComponentInstance>(constructor as any);
+
+      for (const stateKey of parentStateKeys) {
+        const stateValue = this._component[stateKey];
+
+        this.state[stateKey] = stateValue;
+        this._state[stateKey] = stateValue;
+      }
+
+      Object.defineProperties(this._component, propertyDescriptorMap);
 
       if (this.shouldComponentUpdate) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
