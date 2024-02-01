@@ -45,8 +45,8 @@ export class Router {
     }
 
     // @ts-ignore
-    const hydratedData = window.__HYDRATED || [];
-    this._setDataForBrowser(hydratedData);
+    const serverData = window.$_DATA || [];
+    this._setDataForBrowser(serverData);
 
     this._history = createBrowserHistory();
     this._history.listen(({ location, action }) => {
