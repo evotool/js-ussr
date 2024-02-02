@@ -1,4 +1,6 @@
-import { configure } from 'mobx';
+import 'core-js/modules/web.immediate';
+
+import { type IReactionDisposer, autorun, configure, isObservable, toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import {
   type ComponentType,
@@ -42,7 +44,7 @@ export function makeComponent<
     (c) => Reflector.find<string[]>(COMPONENT_STATE_MKEY, c) || [],
   );
 
-  const { withFns = [] } = options;
+  const { withFns = [], observe } = options;
 
   const Component = class extends PreactComponent<P, S> {
     static contextType = ComponentContext;
@@ -55,6 +57,8 @@ export function makeComponent<
       nextState: S,
       nextContext: any,
     ) => boolean;
+
+    private readonly _reactionDisposers: IReactionDisposer[] = [];
 
     state: S;
 
@@ -130,6 +134,52 @@ export function makeComponent<
 
     componentWillMount(): void {
       this._component.onInit?.();
+
+      if (!global.window || !observe || !this._component.onChanges) {
+        return;
+      }
+
+      const component = this._component;
+
+      for (const key in component) {
+        if (!Object.hasOwn(component, key) || !isObservable(component[key])) {
+          continue;
+        }
+
+        const store = component[key];
+
+        let prevState = null;
+        let immediateId: any;
+
+        this._reactionDisposers.push(
+          autorun(() => {
+            for (const storeKey in store) {
+              if (!Object.hasOwn(store, storeKey)) {
+                continue;
+              }
+
+              void store[storeKey];
+            }
+
+            clearImmediate(immediateId);
+
+            immediateId = setImmediate(() => {
+              const nextState = toJS(store);
+
+              if (prevState) {
+                component.onChanges!({
+                  [key]: {
+                    prev: prevState,
+                    next: nextState,
+                  },
+                });
+              }
+
+              prevState = nextState;
+            });
+          }),
+        );
+      }
     }
 
     componentDidMount(): void {
@@ -137,44 +187,39 @@ export function makeComponent<
     }
 
     _shouldComponentUpdate = (nextProps: P, nextState: S, nextContext: any): boolean => {
-      let value = this._parentShouldComponentUpdate?.(nextProps, nextState, nextContext) || false;
+      if (this._component.onChanges) {
+        try {
+          const changes = {} as ValueChanges<P & S>;
 
-      if (!this._component.onChanges) {
-        return value;
-      }
+          for (const k of propKeys) {
+            const prev = this.props[k];
+            const next = nextProps[k];
 
-      try {
-        const changes = {} as ValueChanges<P & S>;
+            if (prev === next) {
+              continue;
+            }
 
-        for (const k of propKeys) {
-          const prev = this.props[k];
-          const next = nextProps[k];
-
-          if (prev === next) {
-            continue;
+            changes[k as keyof P] = { prev, next };
           }
 
-          changes[k as keyof P] = { prev, next };
-        }
+          for (const k of stateKeys) {
+            const prev = this.state[k];
+            const next = nextState[k];
 
-        for (const k of stateKeys) {
-          const prev = this.state[k];
-          const next = nextState[k];
+            if (prev === next) {
+              continue;
+            }
 
-          if (prev === next) {
-            continue;
+            changes[k as keyof P] = { prev, next };
           }
 
-          changes[k as keyof P] = { prev, next };
+          this._component.onChanges(changes as any);
+        } catch (err) {
+          console.error(err);
         }
-
-        this._component.onChanges(changes as any);
-      } catch (err) {
-        console.error(err);
-        value = false;
       }
 
-      return value;
+      return this._parentShouldComponentUpdate?.(nextProps, nextState, nextContext) ?? true;
     };
 
     componentDidUpdate(): void {
@@ -183,6 +228,12 @@ export function makeComponent<
 
     componentWillUnmount(): void {
       this._component.onDestroy?.();
+
+      if (observe && global.window) {
+        for (const disposer of this._reactionDisposers) {
+          disposer();
+        }
+      }
     }
 
     render(): JSX.Element {
@@ -190,7 +241,7 @@ export function makeComponent<
     }
   } as PreactComponentClass<P, any>;
 
-  if (options.observe) {
+  if (observe) {
     observer(Component);
   }
 

@@ -48,7 +48,7 @@ export type ValueChanges<O> = {
 export interface ComponentInstance {
   onInit?(): void;
   afterViewInit?(): void;
-  onChanges?(values: ValueChanges<this>): void;
+  onChanges?(values: ValueChanges<{ [key: string]: any }>): void;
   onDestroy?(): void;
   render(): JSX.Element;
 }
