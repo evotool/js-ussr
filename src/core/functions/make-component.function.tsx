@@ -58,7 +58,7 @@ export function makeComponent<
       nextContext: any,
     ) => boolean;
 
-    private readonly _reactionDisposers: IReactionDisposer[] = [];
+    private readonly _reactionDisposers: Record<string, IReactionDisposer> = {};
 
     state: S;
 
@@ -99,6 +99,10 @@ export function makeComponent<
                 }
 
                 this.state[stateKey] = newValue;
+
+                if (global.window && isObservable(newValue)) {
+                  this._registerObservable(stateKey);
+                }
               },
               configurable: true,
             },
@@ -130,6 +134,14 @@ export function makeComponent<
         const collection = container.get<(() => void | Promise<void>)[]>('destroy_collection');
         collection.push(() => this._component.onDestroy!());
       }
+
+      if (global.window) {
+        for (const propKey in props) {
+          if (Object.hasOwn(props, propKey) && isObservable(props[propKey])) {
+            this._registerObservable(propKey);
+          }
+        }
+      }
     }
 
     componentWillMount(): void {
@@ -139,47 +151,49 @@ export function makeComponent<
         return;
       }
 
-      const component = this._component;
-
-      for (const key in component) {
-        if (!Object.hasOwn(component, key) || !isObservable(component[key])) {
+      for (const key in this._component) {
+        if (!Object.hasOwn(this._component, key) || !isObservable(this._component[key])) {
           continue;
         }
 
-        const store = component[key];
-
-        let prevState = null;
-        let immediateId: any;
-
-        this._reactionDisposers.push(
-          autorun(() => {
-            for (const storeKey in store) {
-              if (!Object.hasOwn(store, storeKey)) {
-                continue;
-              }
-
-              void store[storeKey];
-            }
-
-            clearImmediate(immediateId);
-
-            immediateId = setImmediate(() => {
-              const nextState = toJS(store);
-
-              if (prevState) {
-                component.onChanges!({
-                  [key]: {
-                    prev: prevState,
-                    next: nextState,
-                  },
-                });
-              }
-
-              prevState = nextState;
-            });
-          }),
-        );
+        this._registerObservable(key);
       }
+    }
+
+    private _registerObservable(key: string): void {
+      let prevState = null;
+      let immediateId: any;
+
+      const store = this._component[key];
+
+      this._reactionDisposers[key]?.();
+
+      this._reactionDisposers[key] = autorun(() => {
+        for (const storeKey in store) {
+          if (!Object.hasOwn(store, storeKey)) {
+            continue;
+          }
+
+          void store[storeKey];
+        }
+
+        clearImmediate(immediateId);
+
+        immediateId = setImmediate(() => {
+          const nextState = toJS(store);
+
+          if (prevState) {
+            this._component.onChanges!({
+              [key]: {
+                prev: prevState,
+                next: nextState,
+              },
+            });
+          }
+
+          prevState = nextState;
+        });
+      });
     }
 
     componentDidMount(): void {
@@ -187,36 +201,42 @@ export function makeComponent<
     }
 
     _shouldComponentUpdate = (nextProps: P, nextState: S, nextContext: any): boolean => {
-      if (this._component.onChanges) {
-        try {
-          const changes = {} as ValueChanges<P & S>;
+      const changes = {} as ValueChanges<P & S>;
 
-          for (const k of propKeys) {
-            const prev = this.props[k];
-            const next = nextProps[k];
+      for (const propKey of propKeys) {
+        const prev = this.props[propKey];
+        const next = nextProps[propKey];
 
-            if (prev === next) {
-              continue;
-            }
-
-            changes[k as keyof P] = { prev, next };
-          }
-
-          for (const k of stateKeys) {
-            const prev = this.state[k];
-            const next = nextState[k];
-
-            if (prev === next) {
-              continue;
-            }
-
-            changes[k as keyof P] = { prev, next };
-          }
-
-          this._component.onChanges(changes as any);
-        } catch (err) {
-          console.error(err);
+        if (prev === next) {
+          continue;
         }
+
+        if (isObservable(next)) {
+          this._registerObservable(propKey);
+        }
+
+        if (this._component.onChanges) {
+          changes[propKey as keyof P] = { prev, next };
+        }
+      }
+
+      for (const stateKey of stateKeys) {
+        const prev = this.state[stateKey];
+        const next = nextState[stateKey];
+
+        if (prev === next) {
+          continue;
+        }
+
+        if (this._component.onChanges) {
+          changes[stateKey as keyof S] = { prev, next };
+        }
+      }
+
+      try {
+        this._component.onChanges?.(changes);
+      } catch (err) {
+        console.error(err);
       }
 
       return this._parentShouldComponentUpdate?.(nextProps, nextState, nextContext) ?? true;
@@ -230,9 +250,13 @@ export function makeComponent<
       this._component.onDestroy?.();
 
       if (observe && global.window) {
-        for (const disposer of this._reactionDisposers) {
-          disposer();
-        }
+        this._dispose();
+      }
+    }
+
+    private _dispose(): void {
+      for (const dispose of Object.values(this._reactionDisposers)) {
+        dispose();
       }
     }
 

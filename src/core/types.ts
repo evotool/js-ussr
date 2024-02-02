@@ -62,7 +62,7 @@ export interface AfterViewInit {
 }
 
 export interface OnChanges {
-  onChanges(values: ValueChanges<this>): void;
+  onChanges(values: ValueChanges<{ [key: string]: any }>): void;
 }
 
 export interface OnDestroy {
