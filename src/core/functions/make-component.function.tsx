@@ -50,15 +50,9 @@ export function makeComponent<
     static contextType = ComponentContext;
     static displayName = constructor.name;
 
+    private readonly _reactionDisposers: Record<string, IReactionDisposer> = {};
     private readonly _component: InstanceType<C> & ComponentInstance;
     private _state: S;
-    private readonly _parentShouldComponentUpdate?: (
-      nextProps: P,
-      nextState: S,
-      nextContext: any,
-    ) => boolean;
-
-    private readonly _reactionDisposers: Record<string, IReactionDisposer> = {};
 
     state: S;
 
@@ -122,13 +116,6 @@ export function makeComponent<
       }
 
       Object.defineProperties(this._component, propertyDescriptorMap);
-
-      if (this.shouldComponentUpdate) {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
-        this._parentShouldComponentUpdate = this.shouldComponentUpdate!;
-      }
-
-      this.shouldComponentUpdate = this._shouldComponentUpdate;
 
       if (!global.window && this._component.onDestroy) {
         const collection = container.get<(() => void | Promise<void>)[]>('destroy_collection');
@@ -200,11 +187,14 @@ export function makeComponent<
       this._component.afterViewInit?.();
     }
 
-    _shouldComponentUpdate = (nextProps: P, nextState: S, nextContext: any): boolean => {
+    getSnapshotBeforeUpdate(prevProps: P, prevState: S): void {
+      const nextProps = this.props;
+      const nextState = this.state;
+
       const changes = {} as ValueChanges<P & S>;
 
       for (const propKey of propKeys) {
-        const prev = this.props[propKey];
+        const prev = prevProps[propKey];
         const next = nextProps[propKey];
 
         if (prev === next) {
@@ -221,7 +211,7 @@ export function makeComponent<
       }
 
       for (const stateKey of stateKeys) {
-        const prev = this.state[stateKey];
+        const prev = prevState[stateKey];
         const next = nextState[stateKey];
 
         if (prev === next) {
@@ -238,9 +228,7 @@ export function makeComponent<
       } catch (err) {
         console.error(err);
       }
-
-      return this._parentShouldComponentUpdate?.(nextProps, nextState, nextContext) ?? true;
-    };
+    }
 
     componentDidUpdate(): void {
       this._state = { ...this.state };
