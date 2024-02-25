@@ -67,12 +67,6 @@ export class Router {
   }
 
   async navigate(url: string, queryParams: QueryParams = {}): Promise<void> {
-    try {
-      new URL(url);
-    } catch (err) {
-      url = encodeURI(url);
-    }
-
     if (Object.keys(queryParams).length) {
       url += `?${UrlUtils.buildQuery(queryParams)}`;
     }
