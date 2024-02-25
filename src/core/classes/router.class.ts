@@ -49,9 +49,8 @@ export class Router {
     this._setDataForBrowser(serverData);
 
     this._history = createBrowserHistory();
-    this._history.listen(({ location, action }) => {
+    this._history.listen(({ location }) => {
       const uri = this._getLocationUri(location);
-
       const snapshot = this._stateStorage.get(uri);
 
       if (!snapshot) {
@@ -68,6 +67,12 @@ export class Router {
   }
 
   async navigate(url: string, queryParams: QueryParams = {}): Promise<void> {
+    try {
+      new URL(url);
+    } catch (err) {
+      url = encodeURI(url);
+    }
+
     if (Object.keys(queryParams).length) {
       url += `?${UrlUtils.buildQuery(queryParams)}`;
     }
@@ -98,8 +103,6 @@ export class Router {
   private _setDataForBrowser(data: RouteData[]): void {
     this.snapshot.data.length = 0;
     this.snapshot.data.push(...data.map((d) => new RouteData(d)));
-    // @ts-ignore
-    // this.snapshot.data = this.snapshot.data;
   }
 
   private _setSnapshot(snapshot: RouteSnapshot): void {

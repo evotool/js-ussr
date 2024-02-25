@@ -25,7 +25,7 @@ export const Link: FunctionComponent<LinkProps> = observer(
           return;
         }
 
-        if (!href || !(/^\//).exec(href) || (target && !(/^_?self$/i).exec(target))) {
+        if (!href || !href.startsWith('/') || (target && !(/^_?self$/i).exec(target))) {
           return false;
         }
 
@@ -44,7 +44,7 @@ export const Link: FunctionComponent<LinkProps> = observer(
     );
 
     return (
-      <a href={href} target={target} onClick={onClick || (onAnchorClick as any)} {...props}>
+      <a href={href} target={target} onClick={onAnchorClick} {...props}>
         {children}
       </a>
     );
