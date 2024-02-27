@@ -1,6 +1,6 @@
 {
   "name": "@evojs/ussr",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "USSR: server-side renderer",
   "license": "MIT",
   "main": "core/index.ts",

@@ -30,9 +30,9 @@ export const Link: FunctionComponent<LinkProps> = observer(
         }
 
         (async () => {
-          await onClick?.(event);
+          const preventNavigate = await onClick?.(event);
 
-          if (event.defaultPrevented) {
+          if (preventNavigate) {
             return;
           }
 
@@ -61,5 +61,5 @@ export interface LinkProps extends Omit<JSX.HTMLAttributes, 'onClick'> {
   queryParams?: QueryParams;
   target?: string;
   activeClassName?: string;
-  onClick?: (event: JSXInternal.TargetedMouseEvent<HTMLAnchorElement>) => void | Promise<void>;
+  onClick?: (event: JSXInternal.TargetedMouseEvent<HTMLAnchorElement>) => any | Promise<any>;
 }
