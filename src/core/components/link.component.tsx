@@ -31,6 +31,11 @@ export const Link: FunctionComponent<LinkProps> = observer(
 
         (async () => {
           await onClick?.(event);
+
+          if (event.defaultPrevented) {
+            return;
+          }
+
           await router.navigate(href);
         })().catch(console.error);
 
