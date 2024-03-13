@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react';
-import { type ComponentType, type FunctionComponent } from 'preact';
+import { type FunctionComponent } from 'preact';
 import { useEffect } from 'preact/hooks';
 
 import { ErrorPage } from './error-page.component';
 import { HttpException } from '../classes/http-exception.class';
 import { useRouter } from '../hooks/use-router.hook';
-import { type Route } from '../types';
+import { type ComponentType, type Route } from '../types';
 
 export const RouterOutlet: FunctionComponent<RouterOutletProps> = observer(
   ({ parent, errorPage }) => {
