@@ -103,7 +103,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
   ].filter(Boolean);
 
   const cssLoaderModules = {
-    auto: true,
+    // auto: true,
     mode: 'local',
     localIdentName: isProd ? '[hash:base64:8]' : '[local]_[hash:base64:8]',
   };
@@ -152,7 +152,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
             use: [
               {
                 loader: MiniCssExtractPlugin.loader,
-                options: { emit: false },
+                options: { emit: false, esModule: false },
               },
               {
                 loader: 'css-loader',
@@ -222,7 +222,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
             use: [
               {
                 loader: MiniCssExtractPlugin.loader,
-                options: {},
+                options: { esModule: false },
               },
               {
                 loader: 'css-loader',
