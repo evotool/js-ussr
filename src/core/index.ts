@@ -62,7 +62,7 @@ declare global {
       Instance extends { [key: string]: any },
     > = Constructor extends FunctionComponent<Instance>
       ? JSXInternal.LibraryManagedAttributes<Constructor, Instance>
-      : Constructor extends { __preactClass: undefined }
+      : Instance extends import('preact').Component
         ? JSXInternal.LibraryManagedAttributes<
           Constructor,
           Instance['props'] & { [key: string]: any }
