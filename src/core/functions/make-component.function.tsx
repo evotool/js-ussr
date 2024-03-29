@@ -170,7 +170,7 @@ export function makeComponent<
           const nextState = toJS(store);
 
           if (prevState) {
-            this._component.onChanges!({
+            this._component.onChanges?.({
               [key]: {
                 prev: prevState,
                 next: nextState,
