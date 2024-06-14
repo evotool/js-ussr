@@ -4,7 +4,6 @@ tsc -p tsconfig.cli.json
 cp -r src/core/* dist/
 node tools/postbuild.js
 
-cp -r patches/ dist/patches/
 cp LICENSE README.md dist/
 
 rm -f dist/cli/tsconfig.cli.tsbuildinfo
