@@ -1,6 +1,7 @@
 /* eslint-disable import/default, import/no-import-module-exports */
 import { CleanWebpackPlugin } from 'clean-webpack-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { existsSync } from 'fs';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -102,10 +103,34 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
       }),
   ].filter(Boolean);
 
+  function hashBase64(data: string): string {
+    return crypto
+      .createHash('md5')
+      .update(data)
+      .digest('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/[=]+$/, '');
+  }
+
   const cssLoaderModules = {
     // auto: true,
     mode: 'local',
     localIdentName: isProd ? '[hash:base64:8]' : '[local]_[hash:base64:8]',
+    getLocalIdent: (
+      loaderContext: any,
+      localIdentName: string,
+      localName: string,
+      options: any,
+    ) => {
+      const hash = hashBase64(localName);
+
+      const interpolatedName = localIdentName
+        .replace(/\[local\]/g, localName)
+        .replace(/\[hash:base64:(\d+)\]/g, (_, hashLength) => hash.slice(0, +hashLength));
+
+      return interpolatedName;
+    },
   };
 
   const sassLoaderOptions = {
