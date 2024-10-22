@@ -136,7 +136,7 @@ export const makeConfig = (mode: string, pwd: string): Configuration[] => {
   const sassLoaderOptions = {
     sourceMap: !isProd,
     sassOptions: {
-      includePaths: [cwd()],
+      loadPaths: [cwd()],
       functions: {
         ...svgSass(cwd()),
       },
