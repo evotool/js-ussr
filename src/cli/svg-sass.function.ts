@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { type LegacyValue, types } from 'sass';
+import { SassMap, SassString, type Value } from 'sass';
 
 export function encodeSvg(data: string, encodeColors?: boolean): string {
   if (data.includes('"')) {
@@ -20,26 +20,35 @@ export function encodeSvg(data: string, encodeColors?: boolean): string {
 }
 
 export function svgSass(pwd: string): {
-  [sassFn: string]: (svgFileName: types.String, mapping: types.Map) => LegacyValue;
+  [sassFn: string]: (svgFileName: SassString, mapping: SassMap) => Value;
 } {
   return {
-    'svg($filename, $mapping: ())'(filenameArg: types.String, mapArg: types.Map) {
-      const filename = filenameArg.getValue();
+    'svg($filename, $mapping: ())'(filenameArg: SassString, mapArg: SassMap) {
+      const filename = filenameArg.text;
       const filepath = join(pwd, filename);
 
       let svg = readFileSync(filepath, 'utf8');
+
       svg = encodeSvg(svg);
 
-      if (mapArg instanceof types.Map) {
-        for (let i = 0, l = mapArg.getLength(); i < l; i++) {
-          const key = (mapArg.getKey(i) as any).getValue();
-          const value = `${mapArg.getValue(i) as any}`;
-
-          svg = svg.replaceAll(`'$${key}'`, `'${encodeURIComponent(value)}'`);
-        }
+      if (!(mapArg instanceof SassMap)) {
+        return new SassString(`url("data:image/svg+xml,${svg}")`);
       }
 
-      return new types.String(`url("data:image/svg+xml,${svg}")`);
+      const contents = mapArg.contents as Immutable.OrderedMap<SassString, SassString>;
+
+      for (const [sassKey, sassValue] of contents) {
+        if (!(sassValue instanceof SassString)) {
+          continue;
+        }
+
+        const key = sassKey.text;
+        const value = sassValue.text;
+
+        svg = svg.replaceAll(`'$${key}'`, `'${encodeURIComponent(value)}'`);
+      }
+
+      return new SassString(`url("data:image/svg+xml,${svg}")`);
     },
   };
 }
