@@ -1,7 +1,7 @@
 'use strict';
 
-const { writeFileSync, readFileSync } = require('fs');
-const { resolve } = require('path');
+const { writeFileSync, readFileSync } = require('node:fs');
+const { resolve } = require('node:path');
 
 const packageJson = JSON.parse(readFileSync(resolve(__dirname, '../package.json')).toString());
 

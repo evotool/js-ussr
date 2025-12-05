@@ -1,3 +1,4 @@
+import { VNode } from 'preact';
 import { render } from 'preact-render-to-string';
 
 import { Injectable } from '../decorators/injectable.decorator';
@@ -6,10 +7,10 @@ import { Injectable } from '../decorators/injectable.decorator';
 export class HeadManager {
   private readonly _html: string[] = [];
 
-  add(elements?: JSX.Element[]): void;
-  add(element?: JSX.Element): void;
-  add(elements?: JSX.Element | JSX.Element[]): void {
-    elements = [elements].flat().filter(Boolean) as JSX.Element[];
+  add(elements?: VNode<any>[]): void;
+  add(element?: VNode<any>): void;
+  add(elements?: VNode<any> | VNode<any>[]): void {
+    elements = [elements].flat().filter(Boolean) as VNode<any>[];
 
     for (const el of elements) {
       this._html.push(render(el));

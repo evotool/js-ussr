@@ -38,7 +38,9 @@ export class Router {
 
     this._setSnapshot(RouteSnapshot.fromUri(uri, this._routes));
 
-    makeObservable(this, { snapshot: observable });
+    makeObservable(this, {
+      snapshot: observable,
+    });
 
     if (!this._isBrowser) {
       return;

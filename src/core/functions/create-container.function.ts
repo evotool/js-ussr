@@ -27,16 +27,21 @@ export function createContainer(
   );
 
   if (!global.window) {
-    globalProviders.push({ provide: 'destroy_collection', useFactory: () => [], inject: [] });
+    globalProviders.push({
+      provide: 'destroy_collection',
+      useFactory: () => [],
+      inject: [],
+    });
   }
 
-  const allProviders: Provider[] = providers
-    .concat(globalProviders)
-    .map((x) =>
-      isFunction(x)
-        ? Reflector.find<ClassProvider>(INJECTABLE_MKEY, x) ||
-          ({ provide: x, useClass: x } as ClassProvider)
-        : (x as Provider));
+  const allProviders: Provider[] = providers.concat(globalProviders).map((provider) =>
+    isFunction(provider)
+      ? Reflector.find<ClassProvider>(INJECTABLE_MKEY, provider) ||
+        ({
+          provide: provider,
+          useClass: provider,
+        } as ClassProvider)
+      : (provider as Provider));
 
   bindProviders(container, allProviders);
 

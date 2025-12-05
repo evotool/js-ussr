@@ -1,82 +1,82 @@
 import { observer } from 'mobx-react';
-import { type FunctionComponent } from 'preact';
+import { type ComponentType, type FunctionComponent } from 'preact';
 import { useEffect } from 'preact/hooks';
 
 import { ErrorPage } from './error-page.component';
 import { HttpException } from '../classes/http-exception.class';
 import { useRouter } from '../hooks/use-router.hook';
-import { type ComponentType, type Route } from '../types';
+import { type Route } from '../types';
 
-export const RouterOutlet: FunctionComponent<RouterOutletProps> = observer(
-  ({ parent, errorPage }) => {
-    const router$ = useRouter();
-    const { url, routeChain, data, notFound } = router$.snapshot;
+export const RouterOutlet: FunctionComponent<RouterOutletProps> = observer((props) => {
+  const { errorPage, parent } = props;
 
-    useEffect(() => {
-      if (router$.snapshot.fragment) {
-        const el = document.getElementById(router$.snapshot.fragment);
+  const router$ = useRouter();
+  const { url, routeChain, data, notFound } = router$.snapshot;
 
-        if (el) {
-          requestAnimationFrame(() => {
-            scrollTo(0, el.offsetTop);
-          });
+  useEffect(() => {
+    if (router$.snapshot.fragment) {
+      const el = document.getElementById(router$.snapshot.fragment);
 
-          return;
-        }
-      }
+      if (el) {
+        requestAnimationFrame(() => {
+          scrollTo(0, el.offsetTop);
+        });
 
-      scrollTo(0, 0);
-    }, [router$.snapshot]);
-
-    if (!parent) {
-      const FallbackComponent = errorPage || ErrorPage;
-
-      if (notFound) {
-        return <FallbackComponent error={new HttpException('Route not found', 404)} />;
-      }
-
-      const routeDataWithError = data.find((d) => d.error);
-
-      if (routeDataWithError) {
-        return <FallbackComponent error={routeDataWithError.error!} />;
-      }
-
-      const hasRedirectError = routeChain.some((r) => r.redirectTo && r.redirectTo === url);
-
-      if (hasRedirectError) {
-        return <FallbackComponent error={new HttpException('Bad route (CURRENT_PAGE_REDIRECT)')} />;
-      }
-
-      const hasNoComponentError =
-        routeChain.every((r) => !r.redirectTo) && routeChain.some((r) => !r.component);
-
-      if (hasNoComponentError) {
-        return <FallbackComponent error={new HttpException('Bad route (NO_COMPONENT)')} />;
+        return;
       }
     }
 
-    const parentRouteIndex = parent ? routeChain.findIndex((r) => r.component === parent) : -1;
-    const routeIndex = parentRouteIndex + 1;
-    const route = routeChain[routeIndex];
-    const routeData = data[routeIndex];
+    scrollTo(0, 0);
+  }, [router$.snapshot]);
 
-    if (route.redirectTo) {
-      void router$
-        .navigate(
-          route.redirectTo.startsWith('/')
-            ? route.redirectTo
-            : `${url.replace(/\/$/, '')}/${route.redirectTo}`,
-        )
-        .catch(console.error);
+  if (!parent) {
+    const FallbackComponent = errorPage || ErrorPage;
 
-      return null;
+    if (notFound) {
+      return <FallbackComponent error={new HttpException('Route not found', 404)} />;
     }
 
-    const RouteComponent = route.component!;
+    const routeDataWithError = data.find((d) => d.error);
 
-    return <RouteComponent {...routeData.payload} />;
-  },
-);
+    if (routeDataWithError) {
+      return <FallbackComponent error={routeDataWithError.error!} />;
+    }
+
+    const hasRedirectError = routeChain.some((r) => r.redirectTo && r.redirectTo === url);
+
+    if (hasRedirectError) {
+      return <FallbackComponent error={new HttpException('Bad route (CURRENT_PAGE_REDIRECT)')} />;
+    }
+
+    const hasNoComponentError =
+      routeChain.every((r) => !r.redirectTo) && routeChain.some((r) => !r.component);
+
+    if (hasNoComponentError) {
+      return <FallbackComponent error={new HttpException('Bad route (NO_COMPONENT)')} />;
+    }
+  }
+
+  const parentRouteIndex = parent ? routeChain.findIndex((r) => r.component === parent) : -1;
+  const routeIndex = parentRouteIndex + 1;
+  const route = routeChain[routeIndex];
+  const routeData = data[routeIndex];
+
+  if (route.redirectTo) {
+    void router$
+      .navigate(
+        route.redirectTo.startsWith('/')
+          ? route.redirectTo
+          : `${url.replace(/\/$/, '')}/${route.redirectTo}`,
+      )
+      .catch(console.error);
+
+    return null;
+  }
+
+  const RouteComponent = route.component!;
+
+  return <RouteComponent {...routeData.payload} />;
+});
 
 export interface RouterOutletProps {
   errorPage?: ComponentType<{ error: Error }>;

@@ -4,7 +4,7 @@ import { SassMap, SassString, type Value } from 'sass';
 
 export function encodeSvg(data: string, encodeColors?: boolean): string {
   if (data.includes('"')) {
-    data = data.replace(/"/g, "'");
+    data = data.replace(/"/g, `'`);
   }
 
   data = data
@@ -13,7 +13,7 @@ export function encodeSvg(data: string, encodeColors?: boolean): string {
     .replace(/[\r\n"%#()<>?[\\\]^`{|}]/g, encodeURIComponent);
 
   if (encodeColors) {
-    data = data.replace(/'\$([^']*)'/g, "'%23#{str-slice(inspect($$$1),2)}'");
+    data = data.replace(/'\$([^']*)'/g, `'%23#{str-slice(inspect($$$1),2)}'`);
   }
 
   return data;
@@ -23,7 +23,7 @@ export function svgSass(pwd: string): {
   [sassFn: string]: (args: Value[]) => Value;
 } {
   return {
-    'svg($filename, $mapping: ())'(args) {
+    'svg($filename, $mapping: ())'(args: Value[]): Value {
       const [sassFilename, sassMap] = args as [sassFilename: SassString, sassMap: SassMap];
 
       const filename = sassFilename.text;

@@ -31,7 +31,11 @@ export function runWebpack(watch: boolean, mode: string, cwd: string): void {
       log('Stop watching', signal);
 
       try {
-        await new Promise<void>((r, t) => watching.close((e) => e ? t(e) : r()));
+        if (watching) {
+          await new Promise<void>((resolve, reject) =>
+            watching.close((err) => err ? reject(err) : resolve()));
+        }
+
         log('Watching successfully closed');
       } catch (err) {
         log('Watching error:', err);
@@ -63,7 +67,9 @@ export function runWebpack(watch: boolean, mode: string, cwd: string): void {
     log('Stop compiler', signals);
 
     try {
-      await new Promise<void>((r, t) => compiler.close((e) => e ? t(e) : r()));
+      await new Promise<void>((resolve, reject) =>
+        compiler.close((err) => err ? reject(err) : resolve()));
+
       log('Compiler successfully closed');
     } catch (err) {
       log('Compiler error:', err);

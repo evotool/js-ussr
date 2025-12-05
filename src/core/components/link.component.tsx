@@ -1,65 +1,64 @@
 import { observer } from 'mobx-react';
-import { type FunctionComponent } from 'preact';
+import { type FunctionComponent, type HTMLAttributes, type TargetedMouseEvent } from 'preact';
 import { useCallback } from 'preact/hooks';
-import { type JSXInternal } from 'preact/src/jsx';
 
 import { UrlUtils } from '../functions/url-utils.namespace';
 import { useRouter } from '../hooks/use-router.hook';
 import { type QueryParams } from '../types';
 
-export const Link: FunctionComponent<LinkProps> = observer(
-  ({ children, href, queryParams, target, onClick, activeClassName, ...props }) => {
-    if (queryParams && Object.keys(queryParams).length) {
-      href += `?${UrlUtils.buildQuery(queryParams)}`;
-    }
+export const Link: FunctionComponent<LinkProps> = observer((allProps) => {
+  let { children, href, queryParams, target, onClick, activeClassName, ...props } = allProps;
 
-    const router = useRouter();
+  if (queryParams && Object.keys(queryParams).length) {
+    href += `?${UrlUtils.buildQuery(queryParams)}`;
+  }
 
-    if (router.snapshot.url === href && activeClassName) {
-      props.className = activeClassName;
-    }
+  const router = useRouter();
 
-    const onAnchorClick = useCallback(
-      (event: JSXInternal.TargetedMouseEvent<HTMLAnchorElement>) => {
-        if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.button) {
+  if (router.snapshot.url === href && activeClassName) {
+    props.className = activeClassName;
+  }
+
+  const onAnchorClick = useCallback(
+    (event: TargetedMouseEvent<HTMLAnchorElement>) => {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey || event.button) {
+        return;
+      }
+
+      if (!href || !href.startsWith('/') || (target && !(/^_?self$/i).exec(target))) {
+        return false;
+      }
+
+      (async () => {
+        const preventNavigate = await onClick?.(event);
+
+        if (preventNavigate) {
           return;
         }
 
-        if (!href || !href.startsWith('/') || (target && !(/^_?self$/i).exec(target))) {
-          return false;
-        }
+        await router.navigate(href);
+      })().catch(console.error);
 
-        (async () => {
-          const preventNavigate = await onClick?.(event);
+      event.stopImmediatePropagation?.();
+      event.stopPropagation?.();
+      event.preventDefault();
 
-          if (preventNavigate) {
-            return;
-          }
+      return false;
+    },
+    [href, target, onClick, router],
+  );
 
-          await router.navigate(href);
-        })().catch(console.error);
+  return (
+    <a href={href} target={target} onClick={onAnchorClick} {...props}>
+      {children}
+    </a>
+  );
+});
 
-        event.stopImmediatePropagation?.();
-        event.stopPropagation?.();
-        event.preventDefault();
-
-        return false;
-      },
-      [href, target, onClick, router],
-    );
-
-    return (
-      <a href={href} target={target} onClick={onAnchorClick} {...props}>
-        {children}
-      </a>
-    );
-  },
-);
-
-export interface LinkProps extends Omit<JSX.HTMLAttributes, 'onClick'> {
+export interface LinkProps extends Omit<HTMLAttributes, 'onClick'> {
   href: string;
   queryParams?: QueryParams;
   target?: string;
   activeClassName?: string;
-  onClick?: (event: JSXInternal.TargetedMouseEvent<HTMLAnchorElement>) => any | Promise<any>;
+  onClick?: (event: TargetedMouseEvent<HTMLAnchorElement>) => any | Promise<any>;
 }

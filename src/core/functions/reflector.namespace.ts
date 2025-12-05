@@ -1,6 +1,6 @@
 import { type PropertyKey, type Target } from '@abraham/reflection';
 
-import { type Decorator } from '../types';
+import { type AnyDecorator } from '../types';
 
 export namespace Reflector {
   export function find<T>(key: string, target: Target): T | undefined;
@@ -21,11 +21,11 @@ export namespace Reflector {
     return metadata;
   }
 
-  export function set<T>(key: string, value: T): Decorator {
+  export function set<T>(key: string, value: T): AnyDecorator {
     return Reflect.metadata(key, value);
   }
 
-  export function add<T>(key: string, value: T): Decorator {
+  export function add<T>(key: string, value: T): AnyDecorator {
     return (target, propertyKey) => {
       const array = find<T[]>(key, target, propertyKey!);
 

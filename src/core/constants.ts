@@ -1,7 +1,3 @@
-export const COMPONENT_MKEY = 'component';
-export const COMPONENT_PROP_MKEY = 'component:prop';
-export const COMPONENT_STATE_MKEY = 'component:state';
-
 export const INJECTABLE_MKEY = 'injectable';
 
 export const REQUEST = 'request';

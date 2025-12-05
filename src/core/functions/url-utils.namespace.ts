@@ -13,12 +13,14 @@ export namespace UrlUtils {
   }
 
   export function parseQuery(querystring: string): QueryParams {
-    const query = {};
+    const query: QueryParams = {};
     const searchParams = new URLSearchParams(querystring);
 
     for (const [key, value] of searchParams) {
-      if (query[key]) {
-        query[key] = [query[key], value].flat();
+      const prevValue = query[key];
+
+      if (prevValue) {
+        query[key] = [prevValue, value].flat();
       } else {
         query[key] = value;
       }
@@ -27,20 +29,19 @@ export namespace UrlUtils {
     return query;
   }
 
-  export function buildQuery(queryParams: BuildQueryParams): string {
-    const searchParams = new URLSearchParams();
+  export function buildQuery(queryParams: BuildQueryParams, sort?: boolean): string {
+    const queryParamsEntries = Object.entries(queryParams);
 
-    for (const [key, value] of Object.entries(queryParams)) {
-      if (Array.isArray(value)) {
-        for (const v of value) {
-          searchParams.append(key, `${v}`);
-        }
-      } else if (value !== undefined) {
-        searchParams.append(key, `${value}`);
-      }
+    if (sort) {
+      queryParamsEntries.sort(([a], [b]) => a.localeCompare(b));
     }
 
-    return searchParams.toString();
+    return queryParamsEntries
+      .flatMap(([key, value]) =>
+        Array.isArray(value)
+          ? value.map((v) => `${encodeURIComponent(key)}=${encodeURIComponent(v)}`)
+          : `${encodeURIComponent(key)}=${encodeURIComponent(value!)}`)
+      .join('&');
   }
 
   export interface BuildQueryParams {
