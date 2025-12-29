@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { type FunctionComponent, type HTMLAttributes, type TargetedMouseEvent } from 'preact';
+import { type AnchorHTMLAttributes, type FunctionComponent, type TargetedMouseEvent } from 'preact';
 import { useCallback } from 'preact/hooks';
 
 import { UrlUtils } from '../functions/url-utils.namespace';
@@ -55,7 +55,7 @@ export const Link: FunctionComponent<LinkProps> = observer((allProps) => {
   );
 });
 
-export interface LinkProps extends Omit<HTMLAttributes, 'onClick'> {
+export interface LinkProps extends Omit<AnchorHTMLAttributes, 'onClick'> {
   href: string;
   queryParams?: QueryParams;
   target?: string;
