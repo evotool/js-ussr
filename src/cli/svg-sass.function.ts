@@ -34,7 +34,9 @@ export function svgSass(pwd: string): {
       svg = encodeSvg(svg);
 
       if (!(sassMap instanceof SassMap)) {
-        return new SassString(`url("data:image/svg+xml,${svg}")`);
+        return new SassString(`url("data:image/svg+xml,${svg}")`, {
+          quotes: false,
+        });
       }
 
       const contents = sassMap.contents as Immutable.OrderedMap<SassString, SassString>;
