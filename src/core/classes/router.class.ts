@@ -36,11 +36,13 @@ export class Router {
 
     const uri = this._isBrowser ? this._getLocationUri(location) : this._req!.url!;
 
-    this._setSnapshot(RouteSnapshot.fromUri(uri, this._routes));
-
     makeObservable(this, {
       snapshot: observable,
+      // @ts-ignore
+      _setSnapshot: action,
     });
+
+    this._setSnapshot(RouteSnapshot.fromUri(uri, this._routes));
 
     if (!this._isBrowser) {
       return;
