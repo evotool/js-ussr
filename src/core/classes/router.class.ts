@@ -1,7 +1,7 @@
 import { EventEmitter } from 'eventemitter3';
 import { type BrowserHistory, createBrowserHistory } from 'history';
 import { Container } from 'inversify';
-import { makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable } from 'mobx';
 
 import { RouteData } from './route-data.class';
 import { RouteSnapshot } from './route-snapshot.class';
