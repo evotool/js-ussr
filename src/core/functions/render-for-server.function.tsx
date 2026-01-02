@@ -1,14 +1,13 @@
+import { type Container } from 'inversify';
 import { type ComponentType } from 'preact';
 import { renderToString } from 'preact-render-to-string';
 
-import { type ServerOptions, createContainer } from './create-container.function';
 import { HeadManager } from '../classes/head-manager.class';
 import { type RouteData } from '../classes/route-data.class';
 import { Router } from '../classes/router.class';
 import { ErrorPage } from '../components/error-page.component';
 import { RouterOutlet } from '../components/router-outlet.component';
 import { ContainerContext } from '../contexts/container.context';
-import { type Provider, type Route, type Type } from '../types';
 
 const renderHtml = (
   head: string,
@@ -38,11 +37,9 @@ const renderHtml = (
   ].join('');
 
 export async function renderForServer(
-  routes: Route[],
-  providers: (Provider | Type)[] = [],
+  container: Container,
   options: ServerRenderOptions,
 ): Promise<Buffer> {
-  const container = createContainer(routes, providers, options);
   const router = container.get(Router);
 
   const { errorPage: ErrorPageComponent = ErrorPage, lang, version } = options;
@@ -78,7 +75,7 @@ export async function renderForServer(
   return Buffer.from(html, 'utf-8');
 }
 
-export interface ServerRenderOptions extends ServerOptions {
+export interface ServerRenderOptions {
   errorPage?: ComponentType<{ error: Error }>;
 
   /**
